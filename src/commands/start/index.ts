@@ -1,4 +1,4 @@
-import { Command, Flags } from '@oclif/core';
+import { Command, Flags, CliUx } from '@oclif/core';
 import axios, { AxiosError } from 'axios';
 import { Server } from "socket.io";
 import IRequest from '../../interfaces/IRequest';
@@ -78,10 +78,14 @@ export default class Start extends Command {
       // receive a message from the client
       socket.on("request", async (port: number, payload: IRequest, callback: (data: ILocalResponse) => void) => {
 
+        const initialMessage = `- ${payload.method.toUpperCase()}:/${payload.url}`;
+
+        CliUx.ux.action.start(initialMessage);
+
         // run the request
         const response = await executeRequest(port, payload);
 
-        console.log(`- ${payload.method.toUpperCase()}:/${payload.url} > ${response.status} ${response.statusTest} > ${response.duration}ms`);
+        CliUx.ux.action.stop(` > ${response.status} ${response.statusTest} > ${response.duration}ms`);
 
         // acknoledgement
         callback(response);
