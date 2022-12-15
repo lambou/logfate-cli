@@ -1,8 +1,8 @@
-import { Command, Flags, CliUx } from '@oclif/core';
+import { CliUx, Command } from '@oclif/core';
 import axios, { AxiosError } from 'axios';
 import { Server } from "socket.io";
-import IRequest from '../../interfaces/IRequest';
 import ILocalResponse from '../../interfaces/ILocalResponse';
+import IRequest from '../../interfaces/IRequest';
 
 /**
  * Run the request lorequesty
@@ -11,12 +11,13 @@ import ILocalResponse from '../../interfaces/ILocalResponse';
 async function executeRequest(port: number, request: IRequest) {
   // initial time
   const initialTime = new Date().getTime();
+
   /**
    * Calling the local URL
    */
   return await axios.request({
     method: request.method,
-    url: `http://localhost:${port}/${request.url}`,
+    url: `http://127.0.0.1:${port}/${request.url}`,
     params: request.query,
     headers: request.headers,
     data: request.body
@@ -37,10 +38,10 @@ async function executeRequest(port: number, request: IRequest) {
     const duration = new Date().getTime() - initialTime;
 
     return {
-      success: true,
-      status: err.response?.status,
-      statusTest: err.response?.statusText,
-      headers: err.response?.headers,
+      success: false,
+      status: err.response?.status ?? 503,
+      statusTest: err.response?.statusText ?? 'Service unavailable',
+      headers: err.response?.headers ?? {},
       data: err.response?.data,
       duration
     } as ILocalResponse;
@@ -61,7 +62,7 @@ export default class Start extends Command {
 
     const io = new Server(6060, {
       cors: {
-        origin: ['https://www.logfate.com', 'http://localhost:3000']
+        origin: ['https://www.logfate.com', 'http://localhost:3000', 'http://127.0.0.1:3000']
       }
     });
 
@@ -71,7 +72,7 @@ export default class Start extends Command {
       // receive a message from the client
       socket.on("request", async (port: number, payload: IRequest, callback: (data: ILocalResponse) => void) => {
 
-        const initialMessage = `- ${payload.method.toUpperCase()}:/${payload.url}`;
+        const initialMessage = `- ${payload.method.toUpperCase()}:http://127.0.0.1:${port}/${payload.url}`;
 
         CliUx.ux.action.start(initialMessage);
 
