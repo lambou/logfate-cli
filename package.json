@@ -1,6 +1,6 @@
 {
   "name": "logfate",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Expose your local APIs to internet via secure tunnels",
   "author": "Arnold LAMBOU @lambou",
   "bin": {
