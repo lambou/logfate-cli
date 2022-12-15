@@ -6,10 +6,10 @@
   "bin": {
     "logfate": "./bin/run"
   },
-  "homepage": "https://github.com/lambou/logfate-cli",
+  "homepage": "https://www.logfate.com",
   "license": "MIT",
   "main": "dist/index.js",
-  "repository": "lambou/logfate-cli",
+  "repository": "https://github.com/lambou/logfate-cli",
   "files": [
     "/bin",
     "/dist",
@@ -68,7 +68,10 @@
   },
   "bugs": "https://github.com/lambou/logfate-cli/issues",
   "keywords": [
-    "oclif"
+    "tunneling",
+    "localhost-tunneling",
+    "logfate",
+    "logfate-cli"
   ],
   "types": "dist/index.d.ts"
 }

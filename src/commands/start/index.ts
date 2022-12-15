@@ -48,20 +48,13 @@ async function executeRequest(port: number, request: IRequest) {
 }
 
 export default class Start extends Command {
-  static description = 'describe the command here'
+  static description = 'Start listening and executing requests'
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ]
+  static examples = []
 
-  static flags = {
-    // flag with a value (-n, --name=VALUE)
-    name: Flags.string({ char: 'n', description: 'name to print' }),
-    // flag with no value (-f, --force)
-    force: Flags.boolean({ char: 'f' }),
-  }
+  static flags = {}
 
-  static args = [{ name: 'file' }]
+  static args = []
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Start)
