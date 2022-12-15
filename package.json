@@ -1,5 +1,5 @@
 {
-  "name": "logfate-cli",
+  "name": "logfate",
   "version": "0.0.0",
   "description": "Expose your local APIs to internet via secure tunnels",
   "author": "Arnold LAMBOU @lambou",

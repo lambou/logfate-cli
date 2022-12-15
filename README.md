@@ -44,8 +44,6 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`logfate hello PERSON`](#logfate-hello-person)
-* [`logfate hello world`](#logfate-hello-world)
 * [`logfate help [COMMAND]`](#logfate-help-command)
 * [`logfate plugins`](#logfate-plugins)
 * [`logfate plugins:install PLUGIN...`](#logfate-pluginsinstall-plugin)
@@ -56,46 +54,7 @@ USAGE
 * [`logfate plugins:uninstall PLUGIN...`](#logfate-pluginsuninstall-plugin-1)
 * [`logfate plugins:uninstall PLUGIN...`](#logfate-pluginsuninstall-plugin-2)
 * [`logfate plugins update`](#logfate-plugins-update)
-
-## `logfate hello PERSON`
-
-Say hello
-
-```
-USAGE
-  $ logfate hello [PERSON] -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Who is saying hello
-
-DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ oex hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
-```
-
-_See code: [dist/commands/hello/index.ts](https://github.com/lambou/logfate-cli/blob/v0.0.0/dist/commands/hello/index.ts)_
-
-## `logfate hello world`
-
-Say hello world
-
-```
-USAGE
-  $ logfate hello world
-
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ logfate hello world
-  hello world! (./src/commands/hello/world.ts)
-```
+* [`logfate start [FILE]`](#logfate-start-file)
 
 ## `logfate help [COMMAND]`
 
@@ -346,6 +305,27 @@ FLAGS
 DESCRIPTION
   Update installed plugins.
 ```
+
+## `logfate start [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ logfate start [FILE] [-n <value>] [-f]
+
+FLAGS
+  -f, --force
+  -n, --name=<value>  name to print
+
+DESCRIPTION
+  describe the command here
+
+EXAMPLES
+  $ logfate start
+```
+
+_See code: [dist/commands/start/index.ts](https://github.com/lambou/logfate-cli/blob/v0.0.0/dist/commands/start/index.ts)_
 <!-- commandsstop -->
 * [`oex hello PERSON`](#oex-hello-person)
 * [`oex hello world`](#oex-hello-world)
