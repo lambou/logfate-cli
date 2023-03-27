@@ -1,11 +1,14 @@
+import IProject from "./IProject";
+
 export default interface IRequest {
-    id: string;
-    project_id: string;
+    _id: string;
+    __v: number
+    project: IProject;
     method: string;
     url: string;
     query: any;
     headers: any;
     body: string;
-    request_responses: any[];
-    created_at: string;
+    createdAt: string;
+    updatedAt: string
 }

@@ -1,8 +1,8 @@
 export default interface ILocalResponse {
     success: boolean;
     status: number;
-    statusTest: string;
-    headers: any;
-    data: any;
-    duration: number;
+    statusText: string,
+    body: any,
+    headers: any,
+    responseTime: number
 }

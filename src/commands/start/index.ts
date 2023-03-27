@@ -1,6 +1,7 @@
-import { CliUx, Command } from '@oclif/core';
+import { CliUx, Command, Flags } from '@oclif/core';
 import axios, { AxiosError } from 'axios';
 import { Server } from "socket.io";
+import { connect } from 'socket.io-client';
 import ILocalResponse from '../../interfaces/ILocalResponse';
 import IRequest from '../../interfaces/IRequest';
 
@@ -28,10 +29,10 @@ async function executeRequest(port: number, request: IRequest) {
     return {
       success: true,
       status: response.status,
-      statusTest: response.statusText,
+      statusText: response.statusText,
       headers: response.headers,
-      data: response.data,
-      duration
+      body: response.data,
+      responseTime: duration
     } as ILocalResponse;
   }).catch(async (err: AxiosError<any>) => {
     // request duration
@@ -40,10 +41,10 @@ async function executeRequest(port: number, request: IRequest) {
     return {
       success: false,
       status: err.response?.status ?? 503,
-      statusTest: err.response?.statusText ?? 'Service unavailable',
+      statusText: err.response?.statusText ?? 'Service unavailable',
       headers: err.response?.headers ?? {},
-      data: err.response?.data,
-      duration
+      body: err.response?.data,
+      responseTime: duration
     } as ILocalResponse;
   })
 }
@@ -53,7 +54,14 @@ export default class Start extends Command {
 
   static examples = []
 
-  static flags = {}
+  static flags = {
+    subdomain: Flags.string({
+      required: true
+    }),
+    secret: Flags.string({
+      required: true
+    }),
+  }
 
   static args = []
 
@@ -79,13 +87,53 @@ export default class Start extends Command {
         // run the request
         const response = await executeRequest(port, payload);
 
-        CliUx.ux.action.stop(` > ${response.status} ${response.statusTest} > ${response.duration}ms`);
+        CliUx.ux.action.stop(` > ${response.status} ${response.statusText} > ${response.responseTime}ms`);
 
         // acknoledgement
         callback(response);
       });
 
     });
+
+    function initializeSocket() {
+      // connect to socket io server (public namespace)
+      let socket = connect(
+        `${process.env.NEXT_PUBLIC_API_URL}/tunnel`,
+        {
+          transports: ["websocket"],
+          autoConnect: true,
+        }
+      );
+
+      // listen connect
+      socket.on("connect", () => {
+        console.log("Tunnel socket ID: ", socket.id);
+        socket.emit("subscribe", {
+          subsubdomain: flags.subdomain,
+          secret: flags.secret
+        })
+
+        // new request
+        socket.on("new-request", async (request: IRequest, fn) => {
+          const initialMessage = `- ${request.method.toUpperCase()}:http://127.0.0.1:${request.project.port}/${request.url}`;
+
+          CliUx.ux.action.start(initialMessage);
+
+          // run the request
+          const response = await executeRequest(request.project.port, request);
+
+          CliUx.ux.action.stop(` > ${response.status} ${response.statusText} > ${response.responseTime}ms`);
+
+          // submit callback
+          fn(response)
+        })
+      });
+
+      // Error occur
+      socket.on("error", (err: any) => {
+        console.log("An error occur while communicating with the realtime server.")
+      });
+    };
 
     console.log(`
 ##::::::::'#######:::'######:::'########::::'###::::'########:'########:
