@@ -18,21 +18,23 @@ async function executeRequest(port: number, request: IRequest) {
    */
   return await axios.request({
     method: request.method,
-    url: `http://127.0.0.1:${port}/${request.url}`,
+    url: `http://127.0.0.1:${port}${request.url}`,
     params: request.query,
     headers: request.headers,
     data: request.body
   }).then(async (response) => {
     // request duration
     const duration = new Date().getTime() - initialTime;
+    const contentIgnored = !response.headers['content-type']?.split(';').map(item => item.trim()).includes("application/json")
 
     return {
       success: true,
       status: response.status,
       statusText: response.statusText,
       headers: response.headers,
-      body: response.data,
-      responseTime: duration
+      body: contentIgnored ? 'only body with `content-type: application/json` are saved' : response.data,
+      responseTime: duration,
+      contentIgnored
     } as ILocalResponse;
   }).catch(async (err: AxiosError<any>) => {
     // request duration
@@ -44,7 +46,8 @@ async function executeRequest(port: number, request: IRequest) {
       statusText: err.response?.statusText ?? 'Service unavailable',
       headers: err.response?.headers ?? {},
       body: err.response?.data,
-      responseTime: duration
+      responseTime: duration,
+      contentIgnored: false
     } as ILocalResponse;
   })
 }
@@ -75,7 +78,7 @@ export default class Start extends Command {
     });
 
     io.on("connection", async (socket) => {
-      console.log("Connection established.");
+      console.log("Web app connection established.");
 
       // receive a message from the client
       socket.on("request", async (port: number, payload: IRequest, callback: (data: ILocalResponse) => void) => {
@@ -87,7 +90,7 @@ export default class Start extends Command {
         // run the request
         const response = await executeRequest(port, payload);
 
-        CliUx.ux.action.stop(` > ${response.status} ${response.statusText} > ${response.responseTime}ms`);
+        CliUx.ux.action.stop(` > ${response.status} ${response.statusText} > ${response.responseTime}ms${response.contentIgnored ? ' > body ignored' : ''}`);
 
         // acknoledgement
         callback(response);
@@ -98,7 +101,7 @@ export default class Start extends Command {
     function initializeSocket() {
       // connect to socket io server (public namespace)
       let socket = connect(
-        `${process.env.NEXT_PUBLIC_API_URL}/tunnel`,
+        `http://localhost:8080/tunnel`,
         {
           transports: ["websocket"],
           autoConnect: true,
@@ -109,23 +112,22 @@ export default class Start extends Command {
       socket.on("connect", () => {
         console.log("Tunnel socket ID: ", socket.id);
         socket.emit("subscribe", {
-          subsubdomain: flags.subdomain,
+          subdomain: flags.subdomain,
           secret: flags.secret
         })
-
         // new request
-        socket.on("new-request", async (request: IRequest, fn) => {
-          const initialMessage = `- ${request.method.toUpperCase()}:http://127.0.0.1:${request.project.port}/${request.url}`;
+        socket.on("new-request", async (request: IRequest, callback) => {
+          const initialMessage = `- ${request.method.toUpperCase()}:http://127.0.0.1:${request.project.port}${request.url}`;
 
           CliUx.ux.action.start(initialMessage);
 
           // run the request
           const response = await executeRequest(request.project.port, request);
 
-          CliUx.ux.action.stop(` > ${response.status} ${response.statusText} > ${response.responseTime}ms`);
+          CliUx.ux.action.stop(` > ${response.status} ${response.statusText} > ${response.responseTime}ms${response.contentIgnored ? ' > body ignored' : ''}`);
 
           // submit callback
-          fn(response)
+          callback({ ...response })
         })
       });
 
@@ -144,7 +146,7 @@ export default class Start extends Command {
 ##::::::: ##:::: ##: ##::: ##:: ##::::::: ##.... ##:::: ##:::: ##:::::::
 ########:. #######::. ######::: ##::::::: ##:::: ##:::: ##:::: ########:
 ........:::.......::::......::::..::::::::..:::::..:::::..:::::........:`);
-    console.log("Waiting for requests");
-    console.log("=========================");
+
+    initializeSocket()
   }
 }

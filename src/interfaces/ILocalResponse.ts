@@ -5,4 +5,5 @@ export default interface ILocalResponse {
     body: any,
     headers: any,
     responseTime: number
+    contentIgnored: boolean
 }
